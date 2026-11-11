@@ -142,6 +142,30 @@ add_library(cpp_test_static_library SHARED inkscape-test.cpp doc-per-case-test.c
 target_link_libraries(cpp_test_static_library PUBLIC ${GTEST_LIBRARIES} inkscape_base)
 
 add_custom_target(tests)
+
+# Standalone rendering regression test (also runnable without GoogleTest).
+add_executable(test_ai_region src/ai-region-test.cpp)
+target_link_libraries(test_ai_region inkscape_base 2Geom::2geom)
+add_test(NAME test_ai_region COMMAND test_ai_region)
+set_tests_properties(test_ai_region PROPERTIES ENVIRONMENT "${INKSCAPE_TEST_PROFILE_DIR_ENV}/test_ai_region;${CMAKE_CTEST_ENV}")
+add_dependencies(tests test_ai_region)
+add_test(NAME test_ai_workflow COMMAND test_ai_workflow)
+add_dependencies(tests test_ai_workflow test_ai_design_agents test_ai_design_services test_ai_design_assets)
+add_test(NAME test_ai_design_agents COMMAND test_ai_design_agents)
+add_dependencies(tests test_ai_layout_search)
+add_test(NAME test_ai_layout_search COMMAND test_ai_layout_search)
+add_dependencies(tests test_ai_connection)
+add_test(NAME test_ai_connection_endpoints COMMAND test_ai_connection --endpoints)
+add_test(NAME test_ai_design_services COMMAND test_ai_design_services)
+add_test(NAME test_ai_design_assets COMMAND test_ai_design_assets)
+
+add_executable(test_ai_chat_format src/ai-chat-format-test.cpp)
+target_link_libraries(test_ai_chat_format inkscape_base)
+add_test(NAME test_ai_chat_format COMMAND test_ai_chat_format)
+add_dependencies(tests test_ai_chat_format)
+
+# Explicit desktop smoke/snapshot tool is defined in src/ai even without GoogleTest.
+
 foreach(test_source ${TEST_SOURCES})
     string(REPLACE "-test" "" testname "test_${test_source}")
     string(REPLACE "/" "_" testname "${testname}")
@@ -168,6 +192,10 @@ include(${CMAKE_SOURCE_DIR}/CMakeScripts/UnitTest.cmake)
 # EXTRA_LIBS  followed by libraries which you need to be linked to the test.
 #
 add_unit_test(assertions-in-tests TEST_SOURCE "assertions-in-tests.cpp")
+find_package(nlohmann_json REQUIRED)
+add_unit_test(ai-conversation-test TEST_SOURCE "ai-conversation-test.cpp"
+              SOURCES "ui/dialog/ai-conversation.cpp"
+              EXTRA_LIBS GLibmm::GLibmm nlohmann_json::nlohmann_json)
 add_unit_test(version-test TEST_SOURCE "version-test.cpp"
                                SOURCES "version.cpp")
 

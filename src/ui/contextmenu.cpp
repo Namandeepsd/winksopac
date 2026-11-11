@@ -30,6 +30,10 @@
 #include <gtkmm/image.h>
 
 #include "desktop.h"
+#include "document.h"
+#include "ui/dialog/ai-assistant.h"
+#include "ui/dialog/ai-region.h"
+#include "ui/dialog/dialog-container.h"
 #include "document-undo.h"
 #include "inkscape-window.h"
 #include "layer-manager.h"
@@ -147,6 +151,44 @@ ContextMenu::ContextMenu(SPDesktop *desktop, SPObject *object, std::vector<SPIte
 
     auto gmenu         = Gio::Menu::create(); // Main menu
     auto gmenu_section = Gio::Menu::create(); // Section (used multiple times)
+
+    // Keep the selected boundary even when the user right-clicks inside it
+    // (on the underlying artwork). The ordinary menu updates selection below.
+    document->ensureUpToDate();
+    auto outline = dynamic_cast<SPShape *>(desktop->getSelection()->singleItem());
+    if (!outline) {
+        for (auto selected : desktop->getSelection()->items()) {
+            auto shape = dynamic_cast<SPShape *>(selected);
+            if (shape &&
+                (!outline || (shape->parent == outline->parent &&
+                              shape->getRepr()->position() > outline->getRepr()->position()))) {
+                outline = shape;
+            }
+        }
+    }
+    if (!outline) outline = dynamic_cast<SPShape *>(item);
+    // Keep the action discoverable even for an open/compound path or an
+    // empty selection. The assistant explains what needs to be selected.
+    {
+        std::string outline_id = outline && outline->getId() ? outline->getId() : "";
+        action_group->add_action("select-ai-region", [desktop, document, outline_id] {
+            if (desktop->getDocument() != document) return;
+            auto boundary = outline_id.empty() ? nullptr :
+                dynamic_cast<SPShape *>(document->getObjectById(outline_id.c_str()));
+            auto container = desktop->getContainer();
+            container->new_dialog("AIAssistant");
+            auto dialog = container->get_dialog("AIAssistant");
+            if (!dialog) dialog = Inkscape::UI::Dialog::DialogManager::singleton().find_floating_dialog("AIAssistant");
+            if (auto assistant = dynamic_cast<Inkscape::UI::Dialog::AIAssistant *>(dialog)) {
+                assistant->setDesktop(desktop);
+                assistant->select_region(boundary);
+            }
+        });
+        auto region_menu = Gio::Menu::create();
+        AppendItemFromAction(region_menu, "ctx.select-ai-region", _("Select region for AI"), "ai-assistant");
+        gmenu->append_section(region_menu);
+    }
+
 
     auto layer = Inkscape::LayerManager::asLayer(item);  // Layers have their own context menu in the Object and Layers dialog.
     auto root = desktop->layerManager().currentRoot();

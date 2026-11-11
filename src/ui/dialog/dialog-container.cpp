@@ -11,7 +11,7 @@
  */
 
 #include "dialog-container.h"
-
+#include "ui/dialog/ai-assistant.h"
 #include "enums.h"
 #include "inkscape.h"
 #include "inkscape-window.h"
@@ -128,6 +128,7 @@ std::unique_ptr<DialogBase> DialogContainer::dialog_factory(Glib::ustring const 
     else if (dialog_type == "Trace")              return TraceDialog::create();
     else if (dialog_type == "Transform")          return std::make_unique<Transformation>();
     else if (dialog_type == "UndoHistory")        return std::make_unique<UndoHistory>();
+    else if (dialog_type == "AIAssistant")        return std::make_unique<AIAssistant>();
     else if (dialog_type == "XMLEditor")          return std::make_unique<XmlTree>();
 #if WITH_LIBSPELLING
     else if (dialog_type == "Spellcheck")         return std::make_unique<SpellCheck>();

@@ -985,7 +985,7 @@ Gtk::EventSequenceState Canvas::on_button_pressed(Gtk::GestureClick const &contr
 
     grab_focus();
 
-    if (controller.get_current_button() == 3) {
+    if (controller.get_current_button() == 3 && _desktop) {
         _desktop->getCanvasDrawing()->set_sticky(_state & GDK_SHIFT_MASK);
     }
 
@@ -1377,7 +1377,10 @@ CanvasItem *CanvasPrivate::find_item_at(Geom::Point pt)
         pt *= q->_affine.inverse() * canvasitem_ctx->affine();
     }
 
-    q->get_desktop()->getCanvasDrawing()->set_pick_outline(outline);
+    // Standalone SVG previews have a canvas but no editor desktop.
+    if (auto desktop = q->get_desktop()) {
+        desktop->getCanvasDrawing()->set_pick_outline(outline);
+    }
     return canvasitem_ctx->root()->pick_item(pt);
 }
 

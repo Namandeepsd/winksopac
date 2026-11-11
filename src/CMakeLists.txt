@@ -2,6 +2,23 @@
 
 add_library(inkscape_base)
 
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(AI_SOUP REQUIRED IMPORTED_TARGET libsoup-3.0)
+find_package(nlohmann_json REQUIRED)
+
+target_link_libraries(inkscape_base PRIVATE
+    ${AI_SOUP_LINK_LIBRARIES}
+    nlohmann_json::nlohmann_json
+)
+
+# Only the assistant uses libsoup; avoid adding its compiler flags to every source.
+set(AI_SOUP_SOURCE_INCLUDES ${AI_SOUP_INCLUDE_DIRS})
+list(REMOVE_ITEM AI_SOUP_SOURCE_INCLUDES ${CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES})
+set_property(SOURCE ui/dialog/ai-assistant.cpp ui/dialog/ai-design-services.cpp ui/dialog/ai-connection.cpp APPEND PROPERTY
+    INCLUDE_DIRECTORIES ${AI_SOUP_SOURCE_INCLUDES})
+set_property(SOURCE ui/dialog/ai-assistant.cpp ui/dialog/ai-design-services.cpp ui/dialog/ai-connection.cpp APPEND PROPERTY
+    COMPILE_OPTIONS ${AI_SOUP_CFLAGS_OTHER})
+
 target_sources(inkscape_base PRIVATE
   alignment-snapper.cpp
   attribute-rel-css.cpp
@@ -215,6 +232,7 @@ target_sources(inkscape_base PRIVATE
 # -----------------------------------------------------------------------------
 
 add_subdirectory(actions)
+add_subdirectory(ai)
 add_subdirectory(async)
 add_subdirectory(colors)
 add_subdirectory(css)

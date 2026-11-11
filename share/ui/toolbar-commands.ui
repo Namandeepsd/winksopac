@@ -6,6 +6,21 @@
     <property name="valign">start</property>
     <property name="orientation">vertical</property>
     <child>
+  <object class="GtkButton" id="ai-assistant-button">
+    <property name="tooltip-text" translatable="yes">
+      Open AI Assistant
+    </property>
+    <property name="has-frame">False</property>
+    <property name="focus-on-click">False</property>
+    <property name="icon-name">ai-assistant</property>
+    <property name="action-name">win.dialog-open</property>
+    <property name="action-target">'AIAssistant'</property>
+    <style>
+      <class name="priority1"/>
+    </style>
+  </object>
+</child>
+    <child>
       <object class="GtkButton">
         <property name="valign">center</property>
         <property name="focusable">True</property>

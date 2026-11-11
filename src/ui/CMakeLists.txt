@@ -176,6 +176,18 @@ target_sources(inkscape_base PRIVATE
 	dialog/undo-history.cpp
 	dialog/xml-tree.cpp
 	dialog/save-template-dialog.cpp
+	dialog/ai-assistant-workflow.cpp
+	dialog/ai-design-services.cpp
+	dialog/ai-design-assets.cpp
+	dialog/ai-assistant.cpp
+	dialog/ai-vector-edit.cpp
+	dialog/ai-codex.cpp
+	dialog/ai-connection.cpp
+	dialog/ai-assistant-connection.cpp
+	dialog/ai-actions.cpp
+	dialog/ai-region.cpp
+	dialog/ai-conversation.cpp
+
 
 	widget-vfuncs-class-init.cpp
 
@@ -359,6 +371,16 @@ target_sources(inkscape_base PRIVATE
 	desktop/menu-set-tooltips-shift-icons.h
 
 	dialog/about.h
+	dialog/ai-design-services.h
+	dialog/ai-design-assets.h
+	dialog/ai-assistant.h
+	dialog/ai-chat-format.h
+	dialog/ai-vector-edit.h
+	dialog/ai-codex.h
+	dialog/ai-connection.h
+	dialog/ai-actions.h
+	dialog/ai-region.h
+	dialog/ai-conversation.h
 	dialog/align-and-distribute.h
 	dialog/arrange-tab.h
 	dialog/calligraphic-profile-rename.h
