@@ -125,3 +125,13 @@ Real service accounts and installed CLI versions must still be verified using
 Protocol references: [Claude Code CLI](https://code.claude.com/docs/en/cli-reference),
 [Ollama compatibility](https://docs.ollama.com/api/openai-compatibility), and
 [Kimi chat completions](https://platform.kimi.ai/docs/api/chat).
+
+
+### Request duration
+
+Artwork requests default to a ten-minute limit. Change **Request time limit
+(minutes)** in Connection settings (1–30 minutes); this is saved per connector.
+Reference images and detailed SVGs may need more than two minutes. Cancel remains
+available while waiting. Test connection uses a separate one-minute limit and
+only checks a short text response, not image generation. A timeout reports the
+connector and elapsed limit; it does not establish that the login is invalid.

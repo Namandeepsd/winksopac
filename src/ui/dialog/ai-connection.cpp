@@ -55,6 +55,7 @@ bool connection_endpoint_valid(std::string const &url)
 void validate_connection(AIConnection const &c)
 {
     auto const &p = connection_preset(c.provider);
+    if (!c.timeout_seconds || c.timeout_seconds > 1800) throw std::invalid_argument("Request time limit must be between 1 and 1800 seconds.");
     for (auto const &value : {c.model, c.key, c.executable})
         if (value.find('\0') != std::string::npos || value.find_first_of("\r\n") != std::string::npos)
             throw std::invalid_argument("Connection fields must not contain line breaks or null characters.");
@@ -202,7 +203,8 @@ std::string run_connection(AIConnection const &c, std::string const &request, GC
 {
     auto body = Json::parse(request);
     validate_connection_request(c, body);
-    if (!timeout || timeout > 1800) throw std::invalid_argument("Invalid connector timeout.");
+    if (!timeout) timeout = c.timeout_seconds;
+    if (timeout > 1800) throw std::invalid_argument("Invalid connector timeout.");
     g_autoptr(GCancellable) cancel = g_cancellable_new();
     auto parent_id = parent ? g_cancellable_connect(parent, G_CALLBACK(+[](GCancellable *, gpointer target) { g_cancellable_cancel(G_CANCELLABLE(target)); }), cancel, nullptr) : 0;
     std::atomic<bool> timed_out{false};
@@ -254,11 +256,11 @@ std::string run_connection(AIConnection const &c, std::string const &request, GC
         if (!parsed.at("choices").at(0).at("message").at("content").is_string()) throw std::runtime_error("The connector returned no text response.");
         if (parsed["choices"][0]["message"]["content"].get_ref<std::string const &>().empty()) throw std::runtime_error("The model returned an empty response. Try another model or a larger output limit.");
         cleanup();
-        if (timed_out) throw std::runtime_error("The connection timed out. Try a shorter request or another model.");
+        if (timed_out) throw std::runtime_error(connection_preset(c.provider).name + " timed out after " + std::to_string(timeout) + " seconds. Increase Request time limit in Connection settings and retry. You can cancel a running request at any time.");
         return response;
     } catch (...) {
         cleanup();
-        if (timed_out) throw std::runtime_error("The connection timed out. Try a shorter request or another model.");
+        if (timed_out) throw std::runtime_error(connection_preset(c.provider).name + " timed out after " + std::to_string(timeout) + " seconds. Increase Request time limit in Connection settings and retry. You can cancel a running request at any time.");
         if (parent && g_cancellable_is_cancelled(parent)) throw std::runtime_error("Request cancelled.");
         throw;
     }

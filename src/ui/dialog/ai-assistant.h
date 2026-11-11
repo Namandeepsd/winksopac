@@ -19,6 +19,7 @@
 #include <gdkmm/texture.h>
 #include "async/channel.h"
 #include <gtkmm/spinner.h>
+#include <gtkmm/spinbutton.h>
 
 #include <gtkmm/button.h>
 #include <gtkmm/checkbutton.h>
@@ -145,6 +146,7 @@ private:
     Gtk::CheckButton _connection_images;
     Gtk::CheckButton _completion_token_limit;
     Gtk::Entry _cli_executable, _cli_arguments;
+    Gtk::SpinButton _connection_timeout;
     Gtk::Label _connection_help, _connection_status;
     Gtk::Button _connection_test, _connection_login;
     std::map<std::string, AIConnection> _connection_profiles;

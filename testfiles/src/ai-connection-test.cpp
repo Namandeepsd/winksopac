@@ -24,6 +24,7 @@ int main(int argc, char **argv)
         c.provider = test.at("provider"); c.endpoint = test.value("endpoint", ""); c.model = test.value("model", "test-model");
         c.key = test.value("key", ""); c.executable = test.value("executable", ""); c.images = test.value("images", false);
         c.completion_token_limit = test.value("completion_token_limit", false);
+        c.timeout_seconds = test.value("timeout_seconds", c.timeout_seconds);
         c.arguments = test.value("arguments", std::vector<std::string>{});
         if (test.value("cancel", false)) timer = std::jthread([cancel] { std::this_thread::sleep_for(std::chrono::milliseconds(100)); g_cancellable_cancel(cancel); });
         if (test.value("async", false)) {
@@ -44,6 +45,6 @@ int main(int argc, char **argv)
             g_main_loop_unref(completion.loop);
             if (!completion.error.empty()) throw std::runtime_error(completion.error);
             std::cout << completion.response;
-        } else std::cout << run_connection(c, test.at("body").dump(), cancel, test.value("timeout", 5u));
+        } else std::cout << run_connection(c, test.at("body").dump(), cancel, test.value("timeout", 0u));
     } catch (std::exception const &e) { std::cerr << e.what(); return 1; }
 }

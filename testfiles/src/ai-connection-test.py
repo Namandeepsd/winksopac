@@ -38,6 +38,7 @@ prompt = sys.stdin.read()
 pathlib.Path(os.environ['CONNECTOR_TEST_LOG']).write_text(json.dumps({'args':args,'input':prompt,'cwd':os.getcwd()}))
 mode = os.environ.get('CONNECTOR_TEST_MODE', '')
 if mode == 'slow': time.sleep(30)
+if mode == 'delayed': time.sleep(2)
 if mode == 'overflow':
     sys.stdout.write('x' * (5 * 1024 * 1024))
     sys.exit(0)
@@ -81,6 +82,14 @@ else:
             invoke(dict(config, cancel=True, **{"async": True}), env, False)
             response = invoke(dict(config, timeout=1), env, False)
             assert "timed out" in response.stderr
+            response = invoke(dict(config, timeout_seconds=1, **{"async": True}), env, False)
+            assert "timed out after 1 seconds" in response.stderr and "Request time limit" in response.stderr
+            env["CONNECTOR_TEST_MODE"] = "delayed"
+            invoke(dict(config, timeout_seconds=4, **{"async": True}), env)
+            response = invoke(dict(config, timeout_seconds=4, timeout=1), env, False)
+            assert "timed out" in response.stderr
+            invoke(dict(config, timeout_seconds=0), env, False)
+            invoke(dict(config, timeout_seconds=1801), env, False)
             env.pop("CONNECTOR_TEST_MODE")
         image = {"type": "image_url", "image_url": {"url": "data:image/png;base64," + base64.b64encode(b"pixels").decode()}}
         pictured = dict(BODY, messages=[{"role": "user", "content": [{"type": "text", "text": "Inspect"}, image]}])

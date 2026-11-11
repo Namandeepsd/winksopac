@@ -31,6 +31,13 @@ void AIAssistant::setup_connections()
     _completion_token_limit.set_label(_("Use max_completion_tokens"));
     _completion_token_limit.set_tooltip_text(_("Enable when your API requires max_completion_tokens instead of max_tokens, for example some reasoning models."));
     _settings_body.append(_completion_token_limit);
+    auto *limit_label = Gtk::make_managed<Gtk::Label>(_("Request time limit (minutes)"));
+    limit_label->set_xalign(0);
+    _settings_body.append(*limit_label);
+    _connection_timeout.set_range(1, 30); _connection_timeout.set_increments(1, 5);
+    _connection_timeout.set_digits(0); _connection_timeout.set_numeric(true);
+    _connection_timeout.set_tooltip_text(_("Detailed artwork and reference images can take several minutes. You can cancel a request while it runs."));
+    _settings_body.append(_connection_timeout);
     _connection_status.set_wrap(true); _connection_status.set_max_width_chars(36); _connection_status.set_xalign(0);
     _connection_status.set_selectable(true);
     _connection_login.set_label(_("Copy terminal sign-in command"));
@@ -65,6 +72,7 @@ void AIAssistant::setup_connections()
         c.endpoint = prefs->getString(path + "/endpoint", p.endpoint);
         c.model = prefs->getString(path + "/model");
         c.executable = prefs->getString(path + "/executable", p.executable);
+        c.timeout_seconds = 60 * prefs->getIntLimited(path + "/timeout-minutes", 10, 1, 30);
         c.images = prefs->getBool(path + "/images", p.images);
         c.completion_token_limit = prefs->getBool(path + "/completion-token-limit", false);
         _connection_profiles[p.id] = std::move(c);
@@ -73,6 +81,7 @@ void AIAssistant::setup_connections()
     for (auto entry : {&_endpoint, &_model, &_key, &_cli_executable, &_cli_arguments}) entry->signal_changed().connect(changed);
     _connection_images.signal_toggled().connect(changed);
     _completion_token_limit.signal_toggled().connect(changed);
+    _connection_timeout.signal_value_changed().connect(changed);
     _connector.signal_changed().connect(sigc::mem_fun(*this, &AIAssistant::change_connection));
     AIConnection codex; codex.provider = "codex";
     auto selected = prefs->getString(std::string(root) + "selected", connection_executable(codex).empty() ? "http" : "codex");
@@ -85,6 +94,7 @@ AIConnection AIAssistant::selected_connection() const
     c.provider = _active_connector; c.endpoint = _endpoint.get_text(); c.model = _model.get_text(); c.key = _key.get_text();
     c.executable = _cli_executable.get_text(); c.images = _connection_images.get_active();
     c.completion_token_limit = _completion_token_limit.get_active();
+    c.timeout_seconds = 60 * _connection_timeout.get_value_as_int();
     if (connection_preset(c.provider).transport == ConnectionTransport::Bridge) {
         auto text = _cli_arguments.get_text().raw();
         if (!text.empty()) {
@@ -101,6 +111,7 @@ void AIAssistant::save_connection()
     c.provider = _active_connector; c.endpoint = _endpoint.get_text(); c.model = _model.get_text(); c.key = _key.get_text();
     c.executable = _cli_executable.get_text(); c.images = _connection_images.get_active();
     c.completion_token_limit = _completion_token_limit.get_active();
+    c.timeout_seconds = 60 * _connection_timeout.get_value_as_int();
     // Bridge arguments may carry tool-specific credentials, so keep them session-local.
     try { c.arguments = selected_connection().arguments; } catch (...) {}
     auto path = std::string(root) + _active_connector;
@@ -110,6 +121,7 @@ void AIAssistant::save_connection()
     prefs->setString(path + "/executable", c.executable);
     prefs->setBool(path + "/images", c.images);
     prefs->setBool(path + "/completion-token-limit", c.completion_token_limit);
+    prefs->setInt(path + "/timeout-minutes", c.timeout_seconds / 60);
 }
 void AIAssistant::change_connection()
 {
@@ -122,6 +134,7 @@ void AIAssistant::change_connection()
     _cli_executable.set_text(c.executable); _cli_arguments.set_text(nlohmann::json(c.arguments).dump());
     _connection_images.set_active(p.transport == ConnectionTransport::Codex || p.transport == ConnectionTransport::Claude || c.images);
     _completion_token_limit.set_active(c.completion_token_limit);
+    _connection_timeout.set_value(c.timeout_seconds / 60);
     bool http = p.transport == ConnectionTransport::Http;
     _endpoint.set_visible(http); _key.set_visible(http); _cli_executable.set_visible(!http);
     _completion_token_limit.set_visible(http);
@@ -151,6 +164,7 @@ void AIAssistant::test_connection()
     if (_cancellable || _tracing || workflow_busy()) return;
     try {
         auto connection = selected_connection(); validate_connection(connection);
+        connection.timeout_seconds = 60; // Keep the small login/access probe bounded independently.
         nlohmann::json body = {{"model", connection.model}, {"stream", false}, {"max_completion_tokens", 256},
             {"messages", nlohmann::json::array({{{"role", "user"}, {"content", "Reply with OK only."}}})}};
         _cancellable = g_cancellable_new();
