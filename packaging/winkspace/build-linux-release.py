@@ -122,6 +122,7 @@ def main():
     with tempfile.TemporaryDirectory(prefix="stage-", dir=output) as temp:
         stage = Path(temp)
         root = stage / "deb"
+        (root / "DEBIAN").mkdir(parents=True)
         prefix = root / "opt/winkspace"
         print("Installing into a fresh staging directory...", flush=True)
         run(["cmake", "--install", str(build), "--prefix", str(prefix), "--strip"], log=output / "install.log")
@@ -167,7 +168,7 @@ def main():
                 shlibs.append(f"{match[1]} {match[2]} winkspace")
         write(debian / "shlibs.local", "\n".join(shlibs) + "\n")
         binaries = [prefix / "bin/inkscape", prefix / "bin/inkview", *libraries]
-        command = ["dpkg-shlibdeps", "-O", "-xwinkspace"]
+        command = ["dpkg-shlibdeps", "-O", "-xwinkspace", f"-S{root}"]
         command.extend(f"-l{p}" for p in sorted({p.parent for p in libraries}))
         command.extend(f"-e{p}" for p in binaries)
         dependency_output = run(command, cwd=debian.parent)
