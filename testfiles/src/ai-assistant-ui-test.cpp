@@ -90,7 +90,13 @@ struct AIAssistantUITest {
     }
     static void populate(AIAssistant &panel) {
         panel.reset_chat();
-        require(panel._mode.get_model()->children().size() == 4, "Main menu must have four operations");
+        require(panel._mode.get_model()->children().size() == 5, "Main menu must include all five operations");
+        panel._mode.set_active_id("fill");
+        require(panel._mode.get_active_id() == "fill" && panel._choose_image.get_sensitive(),
+                "Shape generation mode must be selectable and accept image references");
+        panel._conversation.mode = "fill";
+        panel.restore_conversation();
+        require(panel._mode.get_active_id() == "fill", "Shape generation conversation did not retain its mode");
         panel._conversation.mode = "geometry";
         panel.restore_conversation();
         require(panel._mode.get_active_id() == "edit", "Legacy geometry conversation did not migrate to Edit");
