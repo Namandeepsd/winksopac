@@ -1,14 +1,13 @@
-[Inkscape Developer Documentation](doc/readme.md) /
+# Install WinkSpace
 
-Building and Installing Inkscape
-================================
+Download the Linux beta from the
+[WinkSpace releases](https://github.com/Namandeepsd/winksopac/releases/tag/v0.1.0-beta.1).
+The `.deb` is built for Ubuntu 25.10 on amd64. The archive requires compatible
+system libraries.
 
-# Download prebuilt Inkscape
+See the [quick start](README.md#get-started) for installation and model setup,
+or the [Linux guide](packaging/winkspace/README.md) for dependencies, archive
+instructions, source builds, removal, and release packaging.
 
-To download ready made Inkscape versions, see:
-- [Stable version](https://inkscape.org/download)
-- [Latest development version](https://inkscape.org/release/inkscape-dev/)
-
-# Compile it yourself
-
-To build Inkscape on your own, please see [Compiling Inkscape](doc/building/readme.md) in the developer documentation.
+For upstream compilation background, see the
+[Inkscape developer documentation](doc/building/readme.md).

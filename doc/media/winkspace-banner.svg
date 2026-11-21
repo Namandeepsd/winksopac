@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="340" viewBox="0 0 1280 340" role="img" aria-labelledby="title description">
+  <title id="title">WinkSpace</title>
+  <desc id="description">Ideas into editable vectors. An AI-assisted vector editor built on Inkscape.</desc>
+  <defs>
+    <linearGradient id="surface" x2="1" y2="1">
+      <stop stop-color="#151328"/><stop offset="1" stop-color="#0b1120"/>
+    </linearGradient>
+    <linearGradient id="accent" x2="1" y2="1">
+      <stop stop-color="#b794ff"/><stop offset=".55" stop-color="#d479d7"/><stop offset="1" stop-color="#53dce5"/>
+    </linearGradient>
+  </defs>
+  <rect width="1280" height="340" rx="22" fill="url(#surface)"/>
+  <g fill="none" stroke="#454063" opacity=".5">
+    <ellipse cx="1190" cy="210" rx="290" ry="145" transform="rotate(-33 1190 210)"/>
+    <ellipse cx="1190" cy="210" rx="330" ry="180" transform="rotate(-33 1190 210)"/>
+    <ellipse cx="1190" cy="210" rx="370" ry="215" transform="rotate(-33 1190 210)"/>
+  </g>
+  <path d="M1010 240 1080 100 1160 235 1240 70" fill="none" stroke="url(#accent)" stroke-width="26" stroke-linecap="round" stroke-linejoin="round" opacity=".78"/>
+  <g transform="translate(63 43) scale(1.25)">
+    <path d="m2.5 5.4 5.6-1.3 6.2 14.2 6.8-11q1.5-2.5 3.4.1l7.1 10.7 6.3-14 5.4 1.6-8.4 17.3q-1.6 3-4.2.1l-7.9-11.5-7 11.5q-2.2 3.1-4.4.1z" fill="#a78bfa"/>
+    <path d="m22.8 11.6 2.6-2.8 7.7 11.1-2.4 3.2z" fill="#ec4899"/>
+    <path d="m31.6 18.1 6.3-14 5.4 1.6-8.4 17.3q-1.6 3-4.2.1l-1-1.5q2.7 1.8 3.8-1.3L40.1 5.9 38.8 5.6z" fill="#22d3ee"/>
+    <path d="m17.3 3.9q4.2 3 8-.3" fill="none" stroke="#f5f1ff" stroke-width="1.6" stroke-linecap="round"/>
+  </g>
+  <g font-family="DejaVu Sans, sans-serif">
+    <text x="139" y="72" font-size="27" font-weight="700" letter-spacing="4" fill="#e8e1fa">WINKSPACE</text>
+    <text x="62" y="162" font-size="54" font-weight="700" letter-spacing="-2" fill="#faf8ff">Ideas into editable vectors.</text>
+    <text x="65" y="211" font-size="23" fill="#c2bdd4">Generate with a reference. Refine with a prompt.</text>
+    <rect x="65" y="255" width="5" height="29" rx="2" fill="#9d7bea"/>
+    <text x="83" y="277" font-size="18" fill="#a6a4bb">AI-assisted SVG creation and editing, built on Inkscape.</text>
+  </g>
+</svg>
