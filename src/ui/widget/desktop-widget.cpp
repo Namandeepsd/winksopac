@@ -445,7 +445,7 @@ void SPDesktopWidget::_updateTitle()
             Name += ")";
         }
 
-        Name += " - Inkscape";
+        Name += " - WinkSpace";
 
         // Name += " (";
         // Name += Inkscape::version_string;

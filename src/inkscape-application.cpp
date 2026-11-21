@@ -970,7 +970,7 @@ void InkscapeApplication::on_startup()
     gapp->add_action("quit",   sigc::mem_fun(*this, &InkscapeApplication::on_quit  ));
 
     // ========================= GUI Init =========================
-    Gtk::Window::set_default_icon_name("org.inkscape.Inkscape");
+    Gtk::Window::set_default_icon_name("winkspace");
 
     // build_menu(); // Builds and adds menu to app. Used by all Inkscape windows. This can be done
                      // before all actions defined. * For the moment done by each window so we can add

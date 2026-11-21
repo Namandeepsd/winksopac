@@ -91,14 +91,7 @@ private:
     Gtk::AspectFrame* _frame = nullptr;
 
     void find_about_screens() {
-        auto path = Glib::build_filename(get_path_string(Resource::SYSTEM, Resource::SCREENS), "about");
-        Resource::get_filenames_from_path(_about_screens, path, {".svgz"}, {});
-        if (_about_screens.empty()) {
-            g_warning("Error loading about screens SVGZs: no such documents in share/screen/about folder.");
-            // fall back
-            _about_screens.push_back(Resource::get_filename(Resource::SCREENS, "about.svg", true, false));
-        }
-        std::sort(_about_screens.begin(), _about_screens.end());
+        _about_screens.push_back(Resource::get_filename(Resource::SCREENS, "winkspace-about.svg"));
     }
 
     Cairo::RefPtr<Cairo::ImageSurface> load_next(Gtk::Picture *viewer, const Glib::ustring& fname, int device_scale) {
@@ -209,7 +202,7 @@ void show_about()
     auto translators  = &get_widget<Gtk::TextView>(builder, "credits-translators");
     auto license      = &get_widget<Gtk::Label>   (builder, "license-text");
 
-    auto text = Inkscape::inkscape_version();
+    auto text = std::string("WinkSpace — based on ") + Inkscape::inkscape_version();
     version_lbl->set_label(text);
     version->signal_clicked().connect(
         sigc::bind(&copy, version, label, std::move(text)));
@@ -242,6 +235,11 @@ void show_about()
     std::ifstream fn(Resource::get_filename(Resource::DOCS, "LICENSE"));
     std::string str((std::istreambuf_iterator<char>(fn)),
                         std::istreambuf_iterator<char>());
+    str = "<big>WinkSpace — independent Inkscape-based distribution</big>\n\n"
+          "WinkSpace is free software under GPL-3.0-or-later, without warranty. "
+          "Upstream copyrights and component licenses remain applicable. "
+          "See WINKSPACE-NOTICES.txt in share/inkscape/doc for modification "
+          "and corresponding-source information.\n\n" + str;
     license->set_markup(str.c_str());
 
     // Handle Esc to close the window

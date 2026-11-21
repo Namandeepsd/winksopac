@@ -1,7 +1,11 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 add_subdirectory(attributes)
 add_subdirectory(branding)
-add_subdirectory(examples)
+option(WINKSPACE_BUNDLE_LEARNING_RESOURCES "Bundle offline upstream tutorials and examples" OFF)
+if(WINKSPACE_BUNDLE_LEARNING_RESOURCES)
+    add_subdirectory(examples)
+    add_subdirectory(tutorials)
+endif()
 add_subdirectory(filters)
 add_subdirectory(fonts)
 add_subdirectory(icons)
@@ -12,7 +16,6 @@ add_subdirectory(palettes)
 add_subdirectory(screens)
 add_subdirectory(symbols)
 add_subdirectory(templates)
-add_subdirectory(tutorials)
 add_subdirectory(ui)
 add_subdirectory(doc)
 
@@ -142,6 +145,8 @@ if(UNIX)
     endforeach()
   endif()
 
+  option(WINKSPACE_INSTALL_UPSTREAM_DESKTOP_ENTRIES "Install upstream Inkscape/Inkview launchers and metadata" OFF)
+  if(WINKSPACE_INSTALL_UPSTREAM_DESKTOP_ENTRIES)
   foreach(APP Inkscape Inkview)
     install(FILES ${CMAKE_BINARY_DIR}/org.inkscape.${APP}.desktop
       DESTINATION ${SHARE_INSTALL}/applications)
@@ -149,6 +154,7 @@ if(UNIX)
 
   install(FILES ${CMAKE_BINARY_DIR}/org.inkscape.Inkscape.appdata.xml
     DESTINATION ${SHARE_INSTALL}/metainfo)
+  endif()
 
 
   install(FILES
@@ -164,3 +170,9 @@ if(UNIX)
 endif()
 
 
+
+# WinkSpace launcher and desktop entry, alongside the underlying editor binary.
+install(PROGRAMS ${CMAKE_SOURCE_DIR}/packaging/winkspace/winkspace
+    DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(FILES ${CMAKE_SOURCE_DIR}/packaging/winkspace/winkspace.desktop
+    DESTINATION ${SHARE_INSTALL}/applications RENAME org.inkscape.Inkscape.WinkSpace.desktop)

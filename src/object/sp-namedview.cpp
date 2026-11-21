@@ -144,13 +144,18 @@ void SPNamedView::set_clip_to_page(SPDesktop* desktop, bool enable) {
     }
 }
 
-static auto const default_desk_color = Inkscape::Colors::Color{0xd1d1d1, false};
+static auto const default_desk_color = Inkscape::Colors::Color{0x505050ff, false};
 static auto const default_guide_color = Inkscape::Colors::Color{0x0086e5, false};
 static auto const default_guide_hi_color = Inkscape::Colors::Color{0xff0000, false};
 
 Inkscape::Colors::Color SPNamedView::getDeskColor() const
 {
-    return _desk_color.value_or(default_desk_color);
+    // Treat the inherited Inkscape grey as the legacy workspace default.
+    // Keep deliberately chosen desk colours and document artwork unchanged.
+    if (!_desk_color || _desk_color->toRGBA() == 0xd1d1d1ff || _desk_color->toRGBA() == 0x11131bff || _desk_color->toRGBA() == 0x383838ff) {
+        return default_desk_color;
+    }
+    return *_desk_color;
 }
 
 Inkscape::Colors::Color SPNamedView::getGuideColor() const

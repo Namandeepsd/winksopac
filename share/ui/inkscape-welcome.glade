@@ -625,7 +625,7 @@
         </property>
         <property name="tab">
           <object class="GtkLabel">
-            <property name="label" translatable="yes">Supported by You</property>
+            <property name="label" translatable="yes">Open-source roots</property>
           </object>
         </property>
       </object>
@@ -727,7 +727,7 @@
                 </child>
                 <child>
                   <object class="GtkButton" id="new">
-                    <property name="label" translatable="yes">New Document</property>
+                    <property name="label" translatable="yes">Create Document</property>
                     <property name="focusable">True</property>
                     <property name="focus-on-click">False</property>
                     <property name="receives-default">True</property>
@@ -741,7 +741,7 @@
         </property>
         <property name="tab">
           <object class="GtkLabel">
-            <property name="label" translatable="yes">Time to Draw</property>
+            <property name="label" translatable="yes">Create in a wink</property>
           </object>
         </property>
       </object>

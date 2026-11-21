@@ -12,6 +12,20 @@ class SPShape;
 
 namespace Inkscape::UI::Dialog {
 
+// Captured closed geometry used only for locally constructed clipping.
+class AIShapeFill
+{
+public:
+    explicit AIShapeFill(SPShape *shape);
+    std::string const &local_boundary_path() const { return _local_path; }
+    Geom::Rect const &bounds() const { return _bounds; }
+    SPItem *compose(SPDocument &document, SPDocument &patch, SPItem *parent = nullptr,
+                    SPItem *after = nullptr) const;
+private:
+    std::string _path, _local_path, _rule;
+    Geom::Rect _bounds;
+};
+
 // All region geometry is in document pixels, independently of layer transforms.
 // Callers own the undo transaction and must reject stale document snapshots.
 class AIRegion

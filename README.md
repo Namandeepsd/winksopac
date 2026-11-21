@@ -1,3 +1,23 @@
+# WinkSpace
+
+WinkSpace is an independent, AI-assisted vector editor built on Inkscape.
+It combines an integrated AI assistant with editable SVG documents and the
+upstream vector editing tools. This checkout targets Linux with GTK4.
+
+After building and installing into the configured local prefix, run
+`./run-winkspace`. See [Linux build and packaging notes](packaging/winkspace/README.md).
+
+Use **AI** to open the assistant, **Advanced** for specialist features, and the
+**More tools** button at the bottom of the toolbar to expand the tool set.
+Credits and licenses are available under **Help → About WinkSpace**.
+
+WinkSpace is not an official Inkscape release. See
+[distribution notices](WINKSPACE-NOTICES.txt) and [COPYING](COPYING).
+The corresponding source and applicable notices must accompany distribution
+through a method permitted by the license.
+
+## Upstream Inkscape information
+
 Inkscape. Draw Freely.
 ======================
 

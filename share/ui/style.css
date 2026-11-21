@@ -1862,3 +1862,104 @@ text-combobox .menuitem {
     margin: 0;
     border-spacing: 0;
 }
+
+/* WinkSpace: flat charcoal workspace with violet/cyan accents. */
+@define-color theme_bg_color #171922;
+@define-color theme_fg_color #e4e6ef;
+@define-color theme_base_color #11131b;
+@define-color theme_text_color #e4e6ef;
+@define-color theme_selected_bg_color #6951b8;
+@define-color theme_selected_fg_color #ffffff;
+@define-color borders #303442;
+@define-color insensitive_fg_color #777d91;
+
+window.background, dialog.background {
+    background-color: #171922;
+    color: #e4e6ef;
+}
+menubar, .menubar, toolbar, .toolbar, headerbar, statusbar {
+    background-color: #1c1f2a;
+    background-image: none;
+    color: #e4e6ef;
+    box-shadow: none;
+    border-color: #303442;
+}
+button {
+    background-image: none;
+    background-color: #252936;
+    color: #e4e6ef;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    box-shadow: none;
+    text-shadow: none;
+    -gtk-icon-shadow: none;
+    transition: background-color 120ms ease-out;
+}
+button.flat { background-color: transparent; }
+button:hover { background-color: #34394b; border-color: #484e64; }
+button:active, button:checked {
+    background-color: #40335e;
+    border-color: #a28ae5;
+    color: #f3edff;
+}
+button.suggested-action {
+    background-color: #7756cf;
+    color: #ffffff;
+    border-color: #9675ed;
+}
+button.suggested-action:hover { background-color: #8967e0; }
+button:disabled { color: #777d91; background-color: #1e212c; border-color: transparent; }
+entry, spinbutton, dropdown, combobox > box > button {
+    background-image: none;
+    background-color: #11131b;
+    color: #e4e6ef;
+    border: 1px solid #363b4d;
+    border-radius: 4px;
+    box-shadow: none;
+}
+entry:focus-within, spinbutton:focus-within { border-color: #a28ae5; }
+entry selection, textview text selection { background-color: #6951b8; color: #ffffff; }
+popover > contents, popover.menu > contents {
+    background-color: #222633;
+    color: #e4e6ef;
+    border: 1px solid #3b4053;
+    border-radius: 6px;
+    box-shadow: 0 4px 16px alpha(black, 0.3);
+}
+notebook > header { background-color: #171922; border-color: #303442; }
+notebook > header tabs tab { background-color: transparent; color: #a6adc3; border-radius: 0; }
+notebook > header tabs tab:checked {
+    color: #eee7ff;
+    background-color: #262332;
+    box-shadow: inset 0 -2px #aa88ee;
+}
+notebook > stack, list, treeview.view, columnview, textview text {
+    background-color: #171922;
+    color: #e4e6ef;
+}
+row:selected, treeview.view:selected { background-color: #40335e; color: #ffffff; }
+row:hover { background-color: #292d3c; }
+separator { background-color: #303442; min-width: 1px; min-height: 1px; }
+scrollbar { background-color: #171922; }
+scrollbar slider { background-color: #454b60; border: none; border-radius: 4px; }
+scrollbar slider:hover { background-color: #737d99; }
+checkbutton check, radiobutton radio {
+    background-image: none;
+    background-color: #11131b;
+    border-color: #596079;
+    box-shadow: none;
+}
+checkbutton check:checked, radiobutton radio:checked, switch:checked {
+    background-color: #7756cf;
+    color: white;
+    border-color: #a28ae5;
+}
+switch { background-color: #303442; border-color: #454b60; }
+switch slider { background-image: none; background-color: #d9dbea; box-shadow: none; }
+scale trough { background-color: #303442; }
+scale highlight { background-color: #a28ae5; }
+#start-screen-window { background-color: #0b0b19; }
+#start-screen-window notebook > header { background-color: #11121e; }
+#start-screen-window notebook > stack { background-color: #171922; }
+#start-screen-window button.suggested-action { padding: 9px 20px; }
+tooltip { background-color: #292d3c; color: #f1f3fa; border: 1px solid #454b60; }

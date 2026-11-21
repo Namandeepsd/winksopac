@@ -109,7 +109,7 @@
           <attribute name="icon">window-close</attribute>
         </item>
         <item>
-          <attribute name="label" translatable="yes">_Quit Inkscape</attribute>
+          <attribute name="label" translatable="yes">_Quit WinkSpace</attribute>
           <attribute name="action">app.quit</attribute>
           <attribute name="icon">application-exit</attribute>
           <attribute name="hidden-when">macos-menubar</attribute>
@@ -228,12 +228,7 @@
               <attribute name="action">app.clone</attribute>
               <attribute name="icon">edit-clone</attribute>
             </item>
-            <item>
-              <attribute name="label" translatable="yes">Create Tiled Clones...</attribute>
-              <attribute name="action">win.dialog-open</attribute>
-              <attribute name="target">CloneTiler</attribute>
-              <attribute name="icon">dialog-tile-clones</attribute>
-            </item>
+
             <item>
               <attribute name="label" translatable="yes">Unlin_k Clone</attribute>
               <attribute name="action">app.clone-unlink</attribute>
@@ -351,14 +346,7 @@
           <attribute name="action">doc.delete-all-guides</attribute>
         </item>
       </section>
-      <section>
-        <item>
-          <attribute name="label" translatable="yes">_XML Editor...</attribute>
-          <attribute name="action">win.dialog-open</attribute>
-          <attribute name="target">XMLEditor</attribute>
-          <attribute name="icon">dialog-xml-editor</attribute>
-        </item>
-      </section>
+
       <section>
         <item>
           <attribute name="label" translatable="yes">P_references</attribute>
@@ -1186,7 +1174,31 @@
         </item>
       </section>
     </submenu>
-    <submenu id="filter-menu">
+
+
+
+    <submenu id="winkspace-ai-menu">
+      <attribute name="label" translatable="yes">_AI</attribute>
+      <section><item>
+        <attribute name="label" translatable="yes">AI Assistant...</attribute>
+        <attribute name="action">win.dialog-open</attribute>
+        <attribute name="target">AIAssistant</attribute>
+      </item></section>
+    </submenu>
+    <submenu id="advanced-menu">
+      <attribute name="label" translatable="yes">_Advanced</attribute>
+      <section><item>
+          <attribute name="label" translatable="yes">_XML Editor...</attribute>
+          <attribute name="action">win.dialog-open</attribute>
+          <attribute name="target">XMLEditor</attribute>
+          <attribute name="icon">dialog-xml-editor</attribute>
+        </item><item>
+              <attribute name="label" translatable="yes">Create Tiled Clones...</attribute>
+              <attribute name="action">win.dialog-open</attribute>
+              <attribute name="target">CloneTiler</attribute>
+              <attribute name="icon">dialog-tile-clones</attribute>
+            </item></section>
+      <submenu id="filter-menu">
       <attribute name="label" translatable="yes">Filter_s</attribute>
       <section>
         <item>
@@ -1210,7 +1222,7 @@
         </item>
       </section>
     </submenu>
-    <submenu id="effect-menu">
+      <submenu id="effect-menu">
       <attribute name="label" translatable="yes">Exte_nsions</attribute>
       <section>
         <item>
@@ -1236,60 +1248,24 @@
         </item>
       </section>
     </submenu>
+    </submenu>
     <submenu id="help-menu">
       <attribute name="label" translatable="yes">_Help</attribute>
+      <section><item>
+          <attribute name="label" translatable="yes">About WinkSpace — Credits &amp; Licenses</attribute>
+          <attribute name="action">app.about</attribute>
+          <attribute name="icon">winkspace</attribute>
+          <attribute name="use-icon">True</attribute>
+          <attribute name="hidden-when">macos-menubar</attribute>
+        </item></section>
+      <submenu id="upstream-help-menu">
+      <attribute name="label" translatable="yes">Inkscape documentation &amp; community</attribute>
       <section>
         <item>
           <attribute name="label" translatable="yes">Inkscape Manual</attribute>
           <attribute name="action">win.help-url-manual</attribute>
         </item>
-        <submenu id="tutorial">
-          <attribute name="label" translatable="yes">Tutorials</attribute>
-	  <section>
-            <item>
-              <attribute name="label" translatable="yes">Beginners' Guide</attribute>
-              <attribute name="action">win.help-url-beginners-guide</attribute>
-            </item>
-	  </section>
-	  <section>
-	    <item>
-              <attribute name="label" translatable="yes">Inkscape: _Basic</attribute>
-              <attribute name="action">app.tutorial-basic</attribute>
-            </item>
-            <item>
-              <attribute name="label" translatable="yes">Inkscape: _Shapes</attribute>
-              <attribute name="action">app.tutorial-shapes</attribute>
-            </item>
-            <item>
-              <attribute name="label" translatable="yes">Inkscape: _Advanced</attribute>
-              <attribute name="action">app.tutorial-advanced</attribute>
-            </item>
-            <item>
-              <attribute name="label" translatable="yes">Inkscape: T_racing</attribute>
-              <attribute name="action">app.tutorial-tracing</attribute>
-            </item>
-            <item>
-              <attribute name="label" translatable="yes">Inkscape: Tracing Pixel Art</attribute>
-              <attribute name="action">app.tutorial-tracing-pixelart</attribute>
-            </item>
-            <item>
-              <attribute name="label" translatable="yes">Inkscape: _Calligraphy</attribute>
-              <attribute name="action">app.tutorial-calligraphy</attribute>
-            </item>
-            <item>
-              <attribute name="label" translatable="yes">Inkscape: _Interpolate</attribute>
-              <attribute name="action">app.tutorial-interpolate</attribute>
-            </item>
-            <item>
-              <attribute name="label" translatable="yes">_Elements of Design</attribute>
-              <attribute name="action">app.tutorial-design</attribute>
-            </item>
-            <item>
-              <attribute name="label" translatable="yes">_Tips and Tricks</attribute>
-              <attribute name="action">app.tutorial-tips</attribute>
-            </item>
-	  </section>
-        </submenu>
+
 	<submenu id="learn-more">
           <attribute name="label" translatable="yes">Learn more</attribute>
 	  <section>
@@ -1322,11 +1298,11 @@
               <attribute name="action">win.help-url-faq</attribute>
             </item>
             <item>
-              <attribute name="label" translatable="yes">Ask Us a Question</attribute>
+              <attribute name="label" translatable="yes">Ask the Inkscape community</attribute>
               <attribute name="action">win.help-url-ask-question</attribute>
             </item>
             <item>
-              <attribute name="label" translatable="yes">Report a Bug</attribute>
+              <attribute name="label" translatable="yes">Report an upstream Inkscape bug</attribute>
               <attribute name="action">win.help-url-report-bug</attribute>
             </item>
           </section>
@@ -1334,21 +1310,16 @@
       </section>
       <section>
         <item>
-          <attribute name="label" translatable="yes">New in This Version</attribute>
+          <attribute name="label" translatable="yes">Upstream Inkscape release notes</attribute>
           <attribute name="action">win.help-url-release-notes</attribute>
         </item>
         <item>
-          <attribute name="label" translatable="yes">Donate</attribute>
+          <attribute name="label" translatable="yes">Support the Inkscape project</attribute>
           <attribute name="action">win.help-url-donate</attribute>
         </item>
-        <item>
-          <attribute name="label" translatable="yes">_About Inkscape</attribute>
-          <attribute name="action">app.about</attribute>
-          <attribute name="icon">inkscape-logo</attribute>
-          <attribute name="use-icon">True</attribute>
-          <attribute name="hidden-when">macos-menubar</attribute>
-        </item>
+
       </section>
+    </submenu>
     </submenu>
   </menu>
 </interface>

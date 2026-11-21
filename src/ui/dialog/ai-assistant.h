@@ -42,6 +42,7 @@ namespace Inkscape::AI { class OutputRegistry; }
 #include "ui/view/svg-view-widget.h"
 
 namespace Inkscape::UI::Dialog {
+class AIShapeFill;
 
 class SelectionEdit;
 struct DesignRun;
@@ -198,6 +199,8 @@ private:
     Gtk::Button _cancel;
     Gtk::Label _status;
 
+    std::shared_ptr<SelectionEdit> _fill_context;
+    std::unique_ptr<AIShapeFill> _shape_fill;
     std::shared_ptr<SelectionEdit> _edit;
     std::shared_ptr<SelectionEdit> _captured_region;
     std::unique_ptr<SPDocument> _generated_preview;

@@ -1,0 +1,13 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=WinkSpace
+GenericName=AI-assisted Vector Editor
+Comment=Generate, edit, and export vector artwork
+Exec=winkspace %F
+TryExec=winkspace
+Icon=winkspace
+Terminal=false
+Categories=Graphics;VectorGraphics;GTK;
+MimeType=image/svg+xml;image/svg+xml-compressed;
+StartupNotify=true

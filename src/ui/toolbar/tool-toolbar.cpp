@@ -14,6 +14,8 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
+#include <set>
+
 #include <glibmm/i18n.h>
 #include <gtkmm/flowbox.h>
 #include <gtkmm/gestureclick.h>
@@ -32,7 +34,8 @@
 namespace Inkscape::UI::Toolbar {
 
 ToolToolbar::ToolToolbar(InkscapeWindow *window)
-    : _context_menu{makeContextMenu(window)}
+    : Gtk::Box(Gtk::Orientation::VERTICAL)
+    , _context_menu{makeContextMenu(window)}
 {
     set_name("ToolToolbar");
 
@@ -45,12 +48,22 @@ ToolToolbar::ToolToolbar(InkscapeWindow *window)
     _popoverbin.setChild(&tool_toolbar);
     _popoverbin.setPopover(_context_menu.get());
     _popoverbin.set_hexpand(true);
+    _popoverbin.set_vexpand(true);
     append(_popoverbin);
 
     // Hide/show buttons based on preferences.
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
     buttons_pref_observer = prefs->createObserver(tools_button_path, [&]{ set_visible_buttons(tool_toolbar); });
     set_visible_buttons(tool_toolbar); // Must come after pack_start()
+
+    auto more = Gtk::make_managed<Gtk::ToggleButton>("•••");
+    more->set_tooltip_text(_("Show more tools"));
+    more->set_active(prefs->getBool("/toolbox/tools/buttons/expanded", false));
+    more->signal_toggled().connect([prefs, more] {
+        prefs->setBool("/toolbox/tools/buttons/expanded", more->get_active());
+        more->set_tooltip_text(more->get_active() ? _("Show fewer tools") : _("Show more tools"));
+    });
+    append(*more);
 }
 
 ToolToolbar::~ToolToolbar() = default;
@@ -62,6 +75,12 @@ void ToolToolbar::set_visible_buttons(Gtk::ScrolledWindow &tool_toolbar)
     Gtk::FlowBox* last_box = nullptr;
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
 
+    static std::set<Glib::ustring> const essential_tools = {
+        "Select", "Node", "Rect", "Arc", "Star", "Pen", "Pencil",
+        "Text", "Gradient", "Dropper", "Zoom", "Pages"
+    };
+    bool const expanded = prefs->getBool("/toolbox/tools/buttons/expanded", false);
+
     // We recurse from the ScrolledWindow, not this, to skip context PopoverMenu
     for_each_descendant(tool_toolbar, [&](Gtk::Widget &widget) {
         if (auto const flowbox = dynamic_cast<Gtk::FlowBox *>(&widget)) {
@@ -70,7 +89,8 @@ void ToolToolbar::set_visible_buttons(Gtk::ScrolledWindow &tool_toolbar)
             last_box = flowbox;
         } else if (auto const btn = dynamic_cast<Gtk::Button *>(&widget)) {
             auto const name = sp_get_action_target(btn);
-            auto show = prefs->getBool(get_tool_visible_button_path(name), true);
+            auto show = prefs->getBool(get_tool_visible_button_path(name), true) &&
+                        (expanded || essential_tools.count(name) != 0);
             auto const parent = btn->get_parent();
             if (show) {
                 parent->set_visible(true);

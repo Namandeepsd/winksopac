@@ -18,6 +18,7 @@
 #include "object/sp-item-group.h"
 #include "object/sp-root.h"
 #include "svg/svg.h"
+#include "style.h"
 #include "xml/document.h"
 #include "xml/node.h"
 
@@ -53,6 +54,62 @@ void check_bounds(Geom::OptRect const &bounds)
         }
     }
 }
+}
+
+AIShapeFill::AIShapeFill(SPShape *shape)
+{
+    if (!shape || shape->isLocked() || shape->isHidden()) {
+        throw std::runtime_error("Select one visible, unlocked closed shape or path.");
+    }
+    if (shape->getClipObject() || shape->getMaskObject()) {
+        throw std::runtime_error("Use an unclipped, unmasked closed outline as the generation boundary.");
+    }
+    auto curve = shape->curve();
+    if (!curve || curve->empty() || std::any_of(curve->begin(), curve->end(),
+            [](auto const &path) { return !path.closed(); })) {
+        throw std::runtime_error("Generate inside selection requires a closed shape or closed path.");
+    }
+    auto path = *curve * shape->i2doc_affine();
+    auto bounds = path.boundsExact();
+    check_bounds(bounds);
+    _bounds = *bounds;
+    _path = sp_svg_write_path(path);
+    _local_path = sp_svg_write_path(path * Geom::Translate(-_bounds.min()));
+    _rule = shape->style->fill_rule.computed == SP_WIND_RULE_EVENODD ? "evenodd" : "nonzero";
+}
+
+SPItem *AIShapeFill::compose(SPDocument &doc, SPDocument &patch, SPItem *parent, SPItem *after) const
+{
+    if (!parent) parent = doc.getRoot();
+    auto transform = parent->i2doc_affine();
+    if (transform.isSingular()) throw std::runtime_error("The destination has a singular transform.");
+    auto defs = doc.getDefs()->getRepr();
+    g_autofree char *uuid = g_uuid_string_random();
+    std::string id = std::string("winkspace-fill-") + uuid;
+    auto clip = add(doc, defs, "svg:clipPath");
+    clip->setAttribute("id", id);
+    clip->setAttribute("clipPathUnits", "userSpaceOnUse");
+    auto boundary = add(doc, clip, "svg:path");
+    boundary->setAttribute("d", _path);
+    boundary->setAttribute("clip-rule", _rule);
+    auto wrapper = add(doc, parent->getRepr(), "svg:g");
+    if (after) parent->getRepr()->changeOrder(wrapper, after->getRepr());
+    wrapper->setAttribute("inkscape:label", "AI shape fill");
+    wrapper->setAttributeOrRemoveIfEmpty("transform", sp_svg_transform_write(transform.inverse()));
+    auto inside = add(doc, wrapper, "svg:g");
+    inside->setAttribute("clip-path", "url(#" + id + ")");
+    auto replacement = patch.copy();
+    auto viewport = replacement->getReprRoot();
+    viewport->setAttributeSvgDouble("width", _bounds.width());
+    viewport->setAttributeSvgDouble("height", _bounds.height());
+    viewport->setAttribute("preserveAspectRatio", "none");
+    replacement->ensureUpToDate();
+    doc.import(*replacement, inside, nullptr, Geom::Translate(_bounds.min()), nullptr,
+               SPDocument::ImportRoot::AlwaysGroup);
+    doc.ensureUpToDate();
+    auto item = dynamic_cast<SPItem *>(doc.getObjectByRepr(wrapper));
+    if (!item || !item->documentVisualBounds()) throw std::runtime_error("The fill contains no visible artwork.");
+    return item;
 }
 
 bool AIRegion::is_outline(SPShape const *outline)

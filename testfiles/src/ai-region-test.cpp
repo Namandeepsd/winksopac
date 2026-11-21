@@ -509,6 +509,50 @@ static void check_geometry_commands()
     require(rejected && sp_repr_save_buf(stale->getReprDoc()).raw() == stale_xml, "Stale target was modified");
 }
 
+static void check_shape_fill()
+{
+    using Inkscape::UI::Dialog::AIShapeFill;
+    for (bool scaled : {false, true}) {
+        auto doc = parse("<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 "s +
+            (scaled ? "100 100" : "200 200") + "'><g id='parent' transform='translate(10,10)'>"
+            "<path id='boundary' fill='red' fill-rule='evenodd' d='M10,10H70V70H10Z M30,30H50V50H30Z'/>"
+            "</g></svg>");
+        auto boundary = dynamic_cast<SPShape *>(doc->getObjectById("boundary"));
+        auto original = boundary->getRepr();
+        auto before_xml = sp_repr_save_buf(doc->getReprDoc()).raw();
+        AIShapeFill fill(boundary);
+        require(sp_repr_save_buf(doc->getReprDoc()).raw() == before_xml, "Capturing fill changed the document");
+        auto patch = parse("<svg xmlns='http://www.w3.org/2000/svg' width='10' height='20' viewBox='0 0 10 20'>"
+            "<rect id='boundary' x='-10' y='-20' width='30' height='60' fill='blue'/></svg>");
+        auto preview = parse("<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'/>");
+        fill.compose(*preview, *patch);
+        require(sp_repr_save_buf(doc->getReprDoc()).raw() == before_xml, "Preview changed the document");
+        Inkscape::DocumentUndo::setUndoSensitive(doc.get(), true);
+        fill.compose(*doc, *patch, dynamic_cast<SPItem *>(doc->getObjectById("parent")), boundary);
+        Inkscape::DocumentUndo::done(doc.get(), RC_("Undo", "Shape fill fixture"), "ai-assistant");
+        require(doc->getObjectById("boundary")->getRepr() == original, "Fill replaced the original shape or collided with its ID");
+        auto image = render(*doc);
+        auto expected = render(*preview);
+        int scale = scaled ? 2 : 1;
+        require(pixel(*image, 25*scale, 25*scale) == std::array<unsigned char,4>{0,0,255,255}, "Fill is not aligned with transformed boundary");
+        require(pixel(*image, 45*scale, 45*scale)[3] == 0, "Fill covered the evenodd hole");
+        require(pixel(*image, 15*scale, 15*scale)[3] == 0, "Fill escaped its clipping boundary");
+        require(pixel(*image, 25*scale, 25*scale) == pixel(*expected, 25*scale, 25*scale), "Preview and insertion differ");
+        auto reopened = parse(sp_repr_save_buf(doc->getReprDoc()).raw());
+        require(pixel(*render(*reopened), 25*scale, 25*scale) == pixel(*image, 25*scale, 25*scale), "Save/reopen changed shape fill");
+        require(Inkscape::DocumentUndo::undo(doc.get()), "Cannot undo shape fill");
+        require(pixel(*render(*doc), 25*scale, 25*scale) == std::array<unsigned char,4>{255,0,0,255}, "Undo did not restore original artwork");
+        require(Inkscape::DocumentUndo::redo(doc.get()), "Cannot redo shape fill");
+        require(pixel(*render(*doc), 25*scale, 25*scale) == std::array<unsigned char,4>{0,0,255,255}, "Redo did not restore shape fill");
+    }
+    auto open = parse("<svg xmlns='http://www.w3.org/2000/svg'><path id='open' d='M0,0L20,20L40,0'/></svg>");
+    bool rejected = false;
+    try { AIShapeFill fill(dynamic_cast<SPShape *>(open->getObjectById("open"))); }
+    catch (std::runtime_error const &) { rejected = true; }
+    require(rejected, "Shape fill accepted an open path");
+    std::cout << "PASS: shape-fill clipping, holes, transformed parents, scaled viewBox, preview isolation, ID collisions, save/reopen, undo/redo and open-path rejection\n";
+}
+
 int main()
 {
     Inkscape::Util::Statics statics;
@@ -516,6 +560,7 @@ int main()
     Inkscape::GC::init();
     Inkscape::Application::create(false);
     try {
+        check_shape_fill();
         check_geometry_commands();
         check_partial_contour_recolor("fill");
         check_partial_contour_recolor("stroke");

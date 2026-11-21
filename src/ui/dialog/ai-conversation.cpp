@@ -42,7 +42,7 @@ void AIConversation::load(std::string const &document) {
         next.brief = field(j, "brief", 8000);
         next.draft = field(j, "draft", 16000);
         next.mode = j.value("mode", std::string("create"));
-        if (next.mode != "create" && next.mode != "edit" && next.mode != "region" && next.mode != "geometry" && next.mode != "commands" && next.mode != "workflow") throw std::runtime_error("Invalid conversation mode");
+        if (next.mode != "create" && next.mode != "fill" && next.mode != "edit" && next.mode != "region" && next.mode != "geometry" && next.mode != "commands" && next.mode != "workflow") throw std::runtime_error("Invalid conversation mode");
         auto const &messages = j.at("messages");
         auto const &accepted = j.at("accepted");
         if (!messages.is_array() || messages.size() > 40 || !accepted.is_array() || accepted.size() > 3)

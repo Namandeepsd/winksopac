@@ -235,6 +235,8 @@ public:
         return region->accepts_selection(*document, items);
     }
 
+    std::string const &original_object_id() const { return original_id; }
+
     void ensure_current(SPDesktop *desktop) const
     {
         if (!document || !desktop || desktop->getDocument() != document) {
@@ -762,7 +764,7 @@ AIAssistant::AIAssistant()
     _thread.set_margin_end(12);
     _thread.set_margin_top(8);
     _thread.set_margin_bottom(12);
-    _welcome.set_markup(_("<b>Your canvas, in conversation.</b>\n\nCreate something new, refine a selection,\nor ask for an Inkscape operation."));
+    _welcome.set_markup(_("<b>Your canvas, in conversation.</b>\n\nCreate something new, refine a selection,\nor ask for help editing your artwork."));
     _welcome.set_wrap(true);
     _welcome.set_wrap_mode(Pango::WrapMode::WORD_CHAR);
     _welcome.set_width_chars(1);
@@ -966,6 +968,7 @@ AIAssistant::AIAssistant()
     _attach_options.append(_paste_prompt);
     _attach_options.append(_fit_page);
     _mode.append("create", _("Create"));
+    _mode.append("fill", _("Generate inside selection"));
     _mode.append("edit", _("Edit"));
     _mode.append("workflow", _("Plan"));
     _mode.append("commands", _("Commands"));
@@ -1030,9 +1033,9 @@ AIAssistant::AIAssistant()
     _footer.append(_history_controls);
     append(_footer);
 
-    _generate.signal_clicked().connect([this] { generate(_mode.get_active_id() != "create"); });
+    _generate.signal_clicked().connect([this] { generate(_mode.get_active_id() != "create" && _mode.get_active_id() != "fill"); });
     _mode.signal_changed().connect([this] {
-        if (_edit && !_edit->geometry_plan.clarification.empty()) reset_proposal();
+        if (_fill_context || (_edit && !_edit->geometry_plan.clarification.empty())) reset_proposal();
         update_selection();
     });
     _new_chat.signal_clicked().connect(sigc::mem_fun(*this, &AIAssistant::reset_chat));
@@ -1071,7 +1074,7 @@ AIAssistant::AIAssistant()
         if ((key == GDK_KEY_Return || key == GDK_KEY_KP_Enter) && _prompt.has_focus() &&
             (modifiers & (Gdk::ModifierType::SHIFT_MASK | Gdk::ModifierType::ALT_MASK | Gdk::ModifierType::SUPER_MASK)) == Gdk::ModifierType{}) {
             if (auto event = key_controller->get_current_event(); event && _prompt.im_context_filter_keypress(std::const_pointer_cast<Gdk::Event>(event))) return true;
-            generate(_mode.get_active_id() != "create");
+            generate(_mode.get_active_id() != "create" && _mode.get_active_id() != "fill");
             return true;
         }
         return false;
@@ -1206,6 +1209,8 @@ void AIAssistant::set_status(Glib::ustring const &text, bool record)
 
 void AIAssistant::reset_proposal()
 {
+    _fill_context.reset();
+    _shape_fill.reset();
     _asset_preview_svg.clear();
     _has_recorded_proposal = false;
     _target_preview.setDocument(nullptr);
@@ -1452,6 +1457,10 @@ void AIAssistant::update_selection()
             Glib::ustring::compose(_("Edit · %1 selected"), selected));
         _context_line.set_visible(true);
     }
+    if (_mode.get_active_id() == "fill") {
+        _selection_hint.set_text(_("Select one closed shape, describe its contents, and Send. Preview shows the clipped result. Insert preserves the original shape and adds editable artwork in one Undo step."));
+        return;
+    }
     if (_mode.get_active_id() == "workflow") {
         _selection_hint.set_text(_("Planner creates a design brief; Asset Discovery searches Wikimedia Commons. Review image previews, choose assets to include, then create the drawing preview. Existing canvas artwork is not sent in this mode."));
         return;
@@ -1687,6 +1696,14 @@ void AIAssistant::preview_artwork(std::string const &svg)
     if (!bounds || !std::isfinite(bounds->width()) || !std::isfinite(bounds->height()) ||
         bounds->width() <= 0 || bounds->height() <= 0 || bounds->width() > 1e7 || bounds->height() > 1e7)
         throw std::runtime_error("The artwork has empty or invalid bounds.");
+    if (_shape_fill && _fill_context) {
+        _fill_context->ensure_current(getDesktop());
+        auto clipped = SPDocument::createNewDoc(nullptr);
+        _shape_fill->compose(*clipped, *doc);
+        doc = std::move(clipped);
+        bounds = doc->getRoot()->desktopVisualBounds();
+        if (!bounds) throw std::runtime_error("The fill does not intersect the selected shape.");
+    }
     doc->fitToRect(*bounds);
     doc->ensureUpToDate();
     record_proposal(safe);
@@ -1699,7 +1716,7 @@ void AIAssistant::preview_artwork(std::string const &svg)
     _preview.set_visible(true);
     _output.get_buffer()->set_text(safe);
     _result.set_visible(true);
-    _result_title.set_text(_("New artwork"));
+    _result_title.set_text(_shape_fill ? _("Artwork inside selection") : _("New artwork"));
     _insert.set_visible(true);
     _insert.set_sensitive(true);
     _apply.set_visible(false);
@@ -1816,10 +1833,15 @@ void AIAssistant::generate(bool edit_selection)
         return;
     }
     if (_mode.get_active_id() == "workflow") { start_design_workflow(); return; }
+    bool const shape_fill = _mode.get_active_id() == "fill";
     auto route = edit_mode();
     bool geometry_edit = route == "geometry";
     bool region_edit = route == "region";
     bool actions_edit = _mode.get_active_id() == "commands";
+    if (shape_fill && _reference_image && _image_method.get_active_id() != "vision") {
+        set_status(_("Choose Use as reference for shape generation; local tracing is available in Create."));
+        return;
+    }
     if (!edit_selection && !actions_edit && !geometry_edit && !region_edit && _reference_image && _image_method.get_active_id() != "vision") {
         trace_image();
         return;
@@ -1837,6 +1859,26 @@ void AIAssistant::generate(bool edit_selection)
     auto user_prompt = prompt;
     if (!edit_selection && !_workflow_generation_context.empty()) prompt = _workflow_generation_context;
     if (prompt.empty()) { set_status(_("Write a design instruction first.")); return; }
+
+    std::shared_ptr<SelectionEdit> fill_context;
+    std::unique_ptr<AIShapeFill> fill_geometry;
+    if (shape_fill) {
+        try {
+            auto desktop = getDesktop();
+            if (!desktop) throw std::runtime_error("Open a document and select one closed shape first.");
+            desktop->getDocument()->ensureUpToDate();
+            fill_geometry = std::make_unique<AIShapeFill>(dynamic_cast<SPShape *>(desktop->getSelection()->singleItem()));
+            fill_context = std::make_shared<SelectionEdit>(desktop);
+            auto const &bounds = fill_geometry->bounds();
+            prompt = "Generate editable vector contents for a closed shape. "
+                "The application clips the result locally; do not draw a border or clipping path. "
+                "Compose to fill the viewport, with important details near the centre. "
+                "Use viewBox='0 0 " + std::to_string(bounds.width()) + " " + std::to_string(bounds.height()) +
+                "' and matching width and height. Boundary path in those output coordinates "
+                "(geometry only, not artwork to reproduce): " + fill_geometry->local_boundary_path() +
+                ". Keep the composition inside this boundary. User instruction: " + prompt;
+        } catch (std::exception const &error) { set_status(error.what()); return; }
+    }
 
     std::shared_ptr<SelectionEdit> edit;
 
@@ -2027,6 +2069,8 @@ void AIAssistant::generate(bool edit_selection)
     auto payload = body.dump();
 
     reset_proposal();
+    _fill_context = std::move(fill_context);
+    _shape_fill = std::move(fill_geometry);
     _edit = edit;
     _pending_prompt = user_prompt;
     _settings.popdown();
@@ -2266,6 +2310,27 @@ void AIAssistant::insert_svg()
                 );
             }
         }
+
+        if (_shape_fill && _fill_context) {
+            _fill_context->ensure_current(desktop);
+            auto original = dynamic_cast<SPItem *>(document->getObjectById(_fill_context->original_object_id().c_str()));
+            if (!original || original->isLocked() || original->isHidden())
+                throw std::runtime_error("The original boundary is unavailable or locked. Generate again.");
+            auto parent_item = dynamic_cast<SPItem *>(original->parent);
+            if (!parent_item) throw std::runtime_error("The selected shape has no editable parent.");
+            importing = true;
+            auto result = _shape_fill->compose(*document, *source, parent_item, original);
+            selection->set(result);
+            document->emitReconstructionFinish();
+            Inkscape::DocumentUndo::done(document, RC_("Undo", "Generate inside selection"), "ai-assistant");
+            importing = false;
+            remember_result();
+            reset_proposal();
+            set_status(_("SVG inserted inside the original shape as editable clipped artwork. Ctrl+Z undoes the insertion."));
+            return;
+        }
+        if (_mode.get_active_id() == "fill")
+            throw std::runtime_error("Generate a new shape-fill preview before inserting; restored previews have no captured boundary.");
 
         std::vector<Inkscape::XML::Node *> inserted;
         auto *parent = layer->getRepr();

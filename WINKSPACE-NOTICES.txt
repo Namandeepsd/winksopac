@@ -1,0 +1,30 @@
+WinkSpace — independent modified distribution of Inkscape
+
+WinkSpace is built on Inkscape and is not an official Inkscape release.
+The Inkscape name identifies the upstream project; no endorsement is implied.
+Upstream project: https://inkscape.org/
+
+Copyright in upstream work remains with its respective contributors. See AUTHORS,
+TRANSLATORS, COPYING, and LICENSES/ in the corresponding source. Installed license
+texts and upstream author lists are available in share/inkscape/doc/ and through
+Help > About WinkSpace — Credits & Licenses.
+
+This combined application is distributed under GNU GPL version 3 or later,
+subject to the applicable component notices and licenses. There is no warranty;
+see the included GPL text and COPYING. Recipients may redistribute and modify
+under those terms. Individual components retain their own license notices.
+
+WinkSpace modifications include AI assistance, connector workflows, startup
+artwork integration, application presentation, and interface simplification.
+Interface and packaging modifications updated: 2026-11-13.
+Closed-shape AI generation and clipping added: 2026-11-14.
+This notice does not claim authorship of upstream work.
+
+Distributors must supply the complete corresponding source matching the binary,
+including WinkSpace modifications, required submodules, and build/install scripts,
+using a GPL-compliant source delivery method. An upstream source link alone is
+not the corresponding source for a modified WinkSpace binary.
+
+Retain component notices when redistributing bundled extensions, libraries,
+fonts, icons, and documentation. See their respective source directories for
+additional notices. This file is not a substitute for those notices.

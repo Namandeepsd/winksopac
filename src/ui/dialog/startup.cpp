@@ -135,7 +135,7 @@ StartScreen::StartScreen()
     , messages{get_widget<Gtk::Label>(build_splash, "messages")}
 {
     set_name("start-screen-window");
-    set_title(Inkscape::inkscape_version());
+    set_title("WinkSpace — Create in a wink");
     set_focusable(true);
     set_receives_default(true);
     set_default_widget(*this);
@@ -194,10 +194,9 @@ StartScreen::StartScreen()
     refresh_dark_switch();
 
     // Load pictures. Gtk::Picture doesn't appear to be able to load image files from builder files.
-    auto const welcome_text_file   = Resource::get_filename(Resource::SCREENS, "start-welcome-text.svg", true);
-    auto const start_welcome_file  = Resource::get_filename(Resource::SCREENS, "start-welcome.png");
-    auto const start_support_file  = Resource::get_filename(Resource::SCREENS, "start-support.png");
-    auto const start_splash_file   = Resource::get_filename(Resource::SCREENS, "start-splash.png");
+    auto const start_welcome_file  = Resource::get_filename(Resource::SCREENS, "winkspace-start.svg");
+    auto const start_support_file  = Resource::get_filename(Resource::SCREENS, "winkspace-start.svg");
+    auto const start_splash_file   = Resource::get_filename(Resource::SCREENS, "winkspace-start.svg");
     auto const start_support_time  = Resource::get_filename(Resource::SCREENS, "start-support-time.png");
     auto const start_support_money = Resource::get_filename(Resource::SCREENS, "start-support-money.png");
 
@@ -206,11 +205,6 @@ StartScreen::StartScreen()
     get_widget<Gtk::Picture>(build_splash, "start-splash"  ).set_filename(start_splash_file);
     get_widget<Gtk::Picture>(build_welcome, "start-support-time" ).set_filename(start_support_time);
     get_widget<Gtk::Picture>(build_welcome, "start-support-money").set_filename(start_support_money);
-
-    // Set overlay on the Welcome tab
-    auto const welcome_text = Gtk::make_managed<Gtk::Picture>();
-    welcome_text->set_filename(welcome_text_file);
-    get_widget<Gtk::Overlay>(build_splash, "start-welcome-overlay").add_overlay(*welcome_text);
 
     // Welcome! tab
     canvas->signal_changed().connect(sigc::mem_fun(*this, &StartScreen::canvas_changed));
@@ -247,16 +241,9 @@ StartScreen::StartScreen()
         templates.reset_selection(page);
     });
 
-    // Show the first tab ONLY on the first run for this version
-    std::string opt_shown = "/options/boot/shown/ver";
-    opt_shown += Inkscape::version_string_without_revision;
-    if (!prefs->getBool(opt_shown, false)) {
-        theme_changed();
-        tabs->set_current_page(0);
-        prefs->setBool(opt_shown, true);
-    } else {
-        tabs->set_current_page(2);
-    }
+    // Start with files and templates. Theme and keyboard setup remain in Preferences.
+    tabs->set_show_tabs(false);
+    tabs->set_current_page(2);
     // Refresh keyboard warning message
     refresh_keys_warning();
 

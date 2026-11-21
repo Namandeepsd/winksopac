@@ -269,7 +269,7 @@ void ThemeContext::add_gtk_css(bool only_providers, bool cached)
         if (gtkthemename != "") {
             g_object_set(settings, "gtk-theme-name", gtkthemename.c_str(), nullptr);
         }
-        bool preferdarktheme = prefs->getBool("/theme/preferDarkTheme", false);
+        bool preferdarktheme = prefs->getBool("/theme/preferDarkTheme", true);
         g_object_set(settings, "gtk-application-prefer-dark-theme", preferdarktheme, nullptr);
         themeiconname = prefs->getString("/theme/iconTheme");
         if (themeiconname != "") {
@@ -491,7 +491,7 @@ bool ThemeContext::isCurrentThemeDark(Gtk::Window * const window)
         prefs->getString("/theme/gtkTheme", prefs->getString("/theme/defaultGtkTheme", ""));
 
     if (auto const settings = Gtk::Settings::get_default()) {
-        auto preferDarkTheme = prefs->getBool("/theme/preferDarkTheme", false);
+        auto preferDarkTheme = prefs->getBool("/theme/preferDarkTheme", true);
 #if GTKMM_CHECK_VERSION(4, 20, 0)
         settings->property_gtk_interface_color_scheme() =
             preferDarkTheme ? Gtk::InterfaceColorScheme::DARK : Gtk::InterfaceColorScheme::LIGHT;
@@ -504,7 +504,7 @@ bool ThemeContext::isCurrentThemeDark(Gtk::Window * const window)
 
     // if theme is dark or we use contrast slider feature and have set preferDarkTheme we force the theme dark
     // and avoid color check, this fix a issue with low contrast themes bad switch of dark theme toggle
-    dark = dark || (prefs->getInt("/theme/contrast", 10) != 10 && prefs->getBool("/theme/preferDarkTheme", false));
+    dark = dark || (prefs->getInt("/theme/contrast", 10) != 10 && prefs->getBool("/theme/preferDarkTheme", true));
     if (dark) return true;
 
     // Otherwise, check the foreground color, and if that has luminance >= 50%, we conclude the theme is dark.

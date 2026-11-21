@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+set -euo pipefail
+app_bin_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+export INKSCAPE_APP_ID_TAG=WinkSpace
+exec "$app_bin_dir/inkscape" "$@"

@@ -16,3 +16,7 @@ install(FILES
     ${CMAKE_SOURCE_DIR}/TRANSLATORS
     ${CMAKE_SOURCE_DIR}/COPYING
     DESTINATION ${INKSCAPE_SHARE_INSTALL}/doc)
+
+# Independent distribution notice, in addition to all upstream notices above.
+install(FILES ${CMAKE_SOURCE_DIR}/WINKSPACE-NOTICES.txt
+    DESTINATION ${INKSCAPE_SHARE_INSTALL}/doc)

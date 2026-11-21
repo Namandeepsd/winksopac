@@ -63,7 +63,7 @@ static char const preferences_skeleton[] =
     <group
        id="base"
        pagecolor="#ffffff"
-       deskcolor="#d1d1d1"
+       deskcolor="#505050"
        pageopacity="0.0"
        pagecheckerboard="0"
        bordercolor="#000000"
